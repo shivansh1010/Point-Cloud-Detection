@@ -8,7 +8,14 @@ World health organization has estimated an average of 1.3 million road deaths ev
 
 Machine learning algorithms for point cloud has evolved since 2017. PointNet was the first algorithms to use 3D based convolution in 2019. Since then, different methods of 3D based neural network algorithms have evolved. Different methods of convolution for 3D point cloud include voxelization, graph network methods and point cloud transformers each with its own advantages and disadvantages. 
 
-In this project, we would look at enhancing the accuracy of Poles, Fence and Road marking (if possible) object identification based on using ensembled algorithms focusing around loss computation for existing algorithms. 
+In this project, we would look at enhancing the accuracy of Fence, Road Marking and Poles (if possible) object identification based on using ensembled algorithms focusing around loss computation for existing algorithms. Below are the activities that would be performed as part of this project.
+
+1. Run PointNet model on Toronto 3D datasets and capture the metrics
+2. Run DGCNN model on Toronto 3D datasets and capture the metrics
+3. Run RandLA-net model on Toronto 3D datasets and capture the metrics
+4. Update error functions (based on Hinge loss) in each of the models and re capture the metrics
+5. Update the models to address biased labels and recapture the metrics
+6. Compare the results and present the results
 
 
 ### Links
