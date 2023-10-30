@@ -1,3 +1,13 @@
+Midterm report
+
+    An enhanced and well-defined problem statement, taking into account the received feedback.
+    Description of the proposed solution approach.
+    A code survey where you include links to the relevant codebases that you refer to while implementing the solution
+    Datasets
+    Implementation details.
+    Preliminary results (if any).
+    A roadmap for the remainder of the semester
+
 # FML-project
 
 This repository belongs to the project of CS725-2023, Foundations of Machine Learning course. 
