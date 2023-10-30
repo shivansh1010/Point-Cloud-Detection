@@ -22,7 +22,7 @@ In this project, we would look at enhancing the accuracy of Fence, Road Marking 
 
 1. Run PointNet model on Toronto 3D datasets and capture the metrics
 2. Run DGCNN model on Toronto 3D datasets and capture the metrics
-3. Run RandLA-net model on Toronto 3D datasets and capture the metrics
+3. Run SuperPoint Transformer model on Toronto 3D datasets and capture the metrics
 4. Update error functions (based on Hinge loss) in each of the models and re capture the metrics
 5. Update the models to address biased labels and recapture the metrics
 6. Compare the results and present the results
@@ -33,4 +33,4 @@ In this project, we would look at enhancing the accuracy of Fence, Road Marking 
 - Toronto-3D dataset: https://github.com/WeikaiTan/Toronto-3D
 - PointNet++ repo: https://github.com/charlesq34/pointnet2/tree/42926632a3c33461aebfbee2d829098b30a23aaa
 - DGCNN repo: https://github.com/WangYueFt/dgcnn/tree/20fdb459ca5d10fe8aba1d296e66340f65990b85
-- RandLA-Net repo: https://github.com/WeikaiTan/RandLA-Net
+- SuperPoint Transformat repo: https://github.com/drprojects/superpoint_transformer/tree/master
