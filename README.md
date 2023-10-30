@@ -31,6 +31,6 @@ In this project, we would look at enhancing the accuracy of Fence, Road Marking 
 ### Links
 - Discussion Sheet: https://docs.google.com/spreadsheets/d/1oOCtOhW92rF0gF32LmwjMK1lHeleryVZe_BT46rSyU4/edit#gid=0
 - Toronto-3D dataset: https://github.com/WeikaiTan/Toronto-3D
-- PointNet++ repo: https://github.com/charlesq34/pointnet2/tree/42926632a3c33461aebfbee2d829098b30a23aaa
-- DGCNN repo: https://github.com/WangYueFt/dgcnn/tree/20fdb459ca5d10fe8aba1d296e66340f65990b85
+- PointNet++ repo: https://github.com/WangYueFt/dgcnn
+- DGCNN repo: https://github.com/WangYueFt/dgcnn
 - SuperPoint Transformat repo: https://github.com/drprojects/superpoint_transformer/tree/master
