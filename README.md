@@ -43,11 +43,12 @@ In this project, we would look at exploring three different neural network model
 ### Links
 - Project Report: https://docs.google.com/document/d/17OKdrrWXopel2GoBX1O-22-uBhzP_fFB9dWt9vmu528/edit
 - Discussion Sheet: https://docs.google.com/spreadsheets/d/1oOCtOhW92rF0gF32LmwjMK1lHeleryVZe_BT46rSyU4/edit#gid=0
-- Toronto-3D dataset: https://github.com/WeikaiTan/Toronto-3D
 - Pointnet Slides - PointNet (stanford.edu)
 - Pointnet Paper - arxiv.org/pdf/1612.00593.pdf
-- Pointnet Github Code - charlesq34/pointnet: PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation (github.com)
-- DGCNN Paper - Dynamic Graph CNN for Learning on Point Clouds (arxiv.org)
-- DGCNN Github Code - WangYueFt/dgcnn (github.com)
-- Superpoint Transformer Paper - [2306.08045] Efficient 3D Semantic Segmentation with Superpoint Transformer (arxiv.org)
-- Superpoint Transformer Github Code - drprojects/superpoint_transformer: [ICCV'23] Official PyTorch implementation of Superpoint Transformer introduced in "Efficient 3D Semantic Segmentation with Superpoint Transformer" (github.com)
+- Pointnet Github Code - https://github.com/charlesq34/pointnet
+- DGCNN Paper - https://arxiv.org/pdf/1801.07829.pdf
+- DGCNN Github Code - https://github.com/WangYueFt/dgcnn
+- Superpoint Transformer Paper - https://arxiv.org/abs/2306.08045
+- Superpoint Transformer Github Code - 
+- https://github.com/drprojects/superpoint_transformer/tree/master
+- Toronto-3D dataset: https://github.com/WeikaiTan/Toronto-3D
