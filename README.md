@@ -20,6 +20,8 @@ Machine learning algorithms for point cloud has evolved since 2017. PointNet was
 
 In this project, we would look at exploring three different neural network models (Convolution based, Graph Based and Transformer based) for classification of Fence, Road Marking and Poles (if possible). We would compare the performance of this model using Hinge Loss and see if the model performce better (giving limited labelled datasets). Below are the activities that would be performed as part of this project.
 
+Completed Activities
+
 1. Run PointNet model on existing datasets (fine tune parameters). Current status - Fine tuning of parameters
 2. Run DGCNN model on existing datasets (fine tune parameters). Current status - Fine tuning of parameters
 3. Run PointNet on Toronto 3D datasets and capture the metrics. Status - Not started
@@ -28,7 +30,14 @@ In this project, we would look at exploring three different neural network model
 6. Update error functions (based on Hinge loss) in each of the models and re capture the metrics
 7. Compare the results and present the results
 
+Pending Activities
+1. Fine tune PointNet for Toronto3D and other datasets
+2. Fine tune DGCN for Toronto3D and other datasets
+3. Fine tune SuperPoint transfomer model
+4. Update the models with triplet loss function.
+5. Compare results.
 
+   
 ### Datasets
 
 
