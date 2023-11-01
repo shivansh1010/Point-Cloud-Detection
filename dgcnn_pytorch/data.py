@@ -78,10 +78,69 @@ class ModelNet40(Dataset):
     def __len__(self):
         return self.data.shape[0]
 
+def read_ply(
+        partition='train'):
+    #---read the ply file--------
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+    if(partition == 'train'):
+        file_path = os.path.join(DATA_DIR, 'LO01.py')
+    else:
+        file_path = os.path.join(DATA_DIR, 'LO02.py')
+    print(file_path)
+    plydata = PlyData.read(file_path)
+    xyz = np.stack([plydata['vertex'][n] for n in['x', 'y', 'z']], axis=1).astype('float32')
+    UTM_OFFSET = [627285, 4841948, 0]
+    xyz = xyz - UTM_OFFSET
+
+    try:
+        rgb = np.stack([plydata['vertex'][n]
+                for n in ['red', 'green', 'blue']]
+                , axis=1).astype('float32')
+    except ValueError:
+        rgb = np.stack([plydata['vertex'][n]
+                for n in ['r', 'g', 'b']]
+                , axis=1).astype('float32')
+
+    try:
+        labels = plydata['vertex']['label']
+        # convert labels into scalar values
+        scalar_label = [OBJECT_LABEL.get(x, OBJECT_LABEL['clutter']) for x in labels]
+        labels = np.array(scalar_lables).astype(np.int64)
+    except ValueError:
+        try:
+            labels = np.array(plydata['vertex']['scalar_Label']).astype(np.int64)
+        except ValueError:
+             print("No labels ")
+
+    data = np.hstack(xyz, rgb)
+
+    return data, labels
+
+class Toronto3D(Dataset):
+    def __init__(self, num_points, partition='train'):
+        self.data, self.label = read_ply(partition)
+        self.num_points = len(self.data)
+        self.partition = partition
+
+    def __getitem__(self, item):
+        pointcloud = self.data[item][:self.num_points]
+        label = self.label[item]
+        if self.partition == 'train':
+            pointcloud = translate_pointcloud(pointcloud)
+            np.random.shuffle(pointcloud)
+        return pointcloud, label
+
+    def __len__(self):
+        return self.data.shape[0]
 
 if __name__ == '__main__':
-    train = ModelNet40(1024)
-    test = ModelNet40(1024, 'test')
+    #train = ModelNet40(1024)
+    #test = ModelNet40(1024, 'test')
+    train = Toronto3D(1024)
+    test = Toronto3D(1024, 'test')
+
     for data, label in train:
         print(data.shape)
         print(label.shape)
