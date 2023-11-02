@@ -144,6 +144,9 @@ def test(args, io):
     #Try to load models
     model = DGCNN(args).to(device)
     
+    state_dict = torch.load(args.model_path)
+    from collections import OrderedDict
+
     model.load_state_dict(torch.load(args.model_path))
     model = nn.DataParallel(model)
     model = model.eval()
