@@ -54,7 +54,7 @@ def get_graph_feature(x, k=20, idx=None):
 
 
 class PointNet(nn.Module):
-    def __init__(self, args, output_channels=40):
+    def __init__(self, args, output_channels=9):
         super(PointNet, self).__init__()
         self.args = args
         self.conv1 = nn.Conv1d(3, 64, kernel_size=1, bias=False)
@@ -73,81 +73,136 @@ class PointNet(nn.Module):
         self.linear2 = nn.Linear(512, output_channels)
 
     def forward(self, x):
+        print("input 1 output shape = ", x.shape)
         x = F.relu(self.bn1(self.conv1(x)))
+        print("input 2 output shape = ", x.shape)
         x = F.relu(self.bn2(self.conv2(x)))
+        print("input 3 output shape = ", x.shape)
         x = F.relu(self.bn3(self.conv3(x)))
+        print("input 4 output shape = ", x.shape)
         x = F.relu(self.bn4(self.conv4(x)))
+        print("input 5 output shape = ", x.shape)
         x = F.relu(self.bn5(self.conv5(x)))
+        print("input 6 output shape = ", x.shape)
         x = F.adaptive_max_pool1d(x, 1).squeeze()
-        x = F.relu(self.bn6(self.linear1(x)))
+        print("input 7 output shape = ", x.shape)
+        x = self.linear1(x)
+        print("input 8 output shape = ", x.shape)
+        x = self.bn6(x)
+        print("input 9 output shape = ", x.shape)
+        x = F.relu(x)
+        #print("input 10 output shape = ", x.shape)
+        #x = F.relu(self.bn6(self.linear1(x)))
+        print("input 18 output shape = ", x.shape)
         x = self.dp1(x)
+        print("input 19 output shape = ", x.shape)
         x = self.linear2(x)
+        print("input 10 output shape = ", x.shape)
         return x
 
 
 class DGCNN(nn.Module):
-    def __init__(self, args, output_channels=40):
+    def __init__(self,args, num_classes=9):
         super(DGCNN, self).__init__()
-        self.args = args
+
         self.k = args.k
-        
+        self.emb_dims=args.emb_dims
+        self.dropout=args.dropout
+
         self.bn1 = nn.BatchNorm2d(64)
         self.bn2 = nn.BatchNorm2d(64)
-        self.bn3 = nn.BatchNorm2d(128)
-        self.bn4 = nn.BatchNorm2d(256)
-        self.bn5 = nn.BatchNorm1d(args.emb_dims)
+        self.bn3 = nn.BatchNorm2d(64)
+        self.bn4 = nn.BatchNorm2d(64)
+        self.bn5 = nn.BatchNorm2d(64)
+        self.bn6 = nn.BatchNorm1d(self.emb_dims)
+        self.bn7 = nn.BatchNorm1d(512)
+        self.bn8 = nn.BatchNorm1d(256)
 
-        self.conv1 = nn.Sequential(nn.Conv2d(6, 64, kernel_size=1, bias=False),
-                                   self.bn1,
-                                   nn.LeakyReLU(negative_slope=0.2))
-        self.conv2 = nn.Sequential(nn.Conv2d(64*2, 64, kernel_size=1, bias=False),
-                                   self.bn2,
-                                   nn.LeakyReLU(negative_slope=0.2))
-        self.conv3 = nn.Sequential(nn.Conv2d(64*2, 128, kernel_size=1, bias=False),
-                                   self.bn3,
-                                   nn.LeakyReLU(negative_slope=0.2))
-        self.conv4 = nn.Sequential(nn.Conv2d(128*2, 256, kernel_size=1, bias=False),
-                                   self.bn4,
-                                   nn.LeakyReLU(negative_slope=0.2))
-        self.conv5 = nn.Sequential(nn.Conv1d(512, args.emb_dims, kernel_size=1, bias=False),
-                                   self.bn5,
-                                   nn.LeakyReLU(negative_slope=0.2))
-        self.linear1 = nn.Linear(args.emb_dims*2, 512, bias=False)
-        self.bn6 = nn.BatchNorm1d(512)
-        self.dp1 = nn.Dropout(p=args.dropout)
-        self.linear2 = nn.Linear(512, 256)
-        self.bn7 = nn.BatchNorm1d(256)
-        self.dp2 = nn.Dropout(p=args.dropout)
-        self.linear3 = nn.Linear(256, output_channels)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(6, 64, kernel_size=1, bias=False),
+            self.bn1,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=1, bias=False),
+            self.bn2,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(64*2, 64, kernel_size=1, bias=False),
+            self.bn3,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=1, bias=False),
+            self.bn4,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(64*2, 64, kernel_size=1, bias=False),
+            self.bn5,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv6 = nn.Sequential(
+            nn.Conv1d(192, self.emb_dims, kernel_size=1, bias=False),
+            self.bn6,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv7 = nn.Sequential(
+            nn.Conv1d(1216, 512, kernel_size=1, bias=False),
+            self.bn7,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.conv8 = nn.Sequential(
+            nn.Conv1d(512, 256, kernel_size=1, bias=False),
+            self.bn8,
+            nn.LeakyReLU(negative_slope=0.2))
+        self.dp1 = nn.Dropout(p=self.dropout)
+        self.conv9 = nn.Conv1d(256, num_classes, kernel_size=1, bias=False)
 
     def forward(self, x):
-        batch_size = x.size(0)
-        x = get_graph_feature(x, k=self.k)
-        x = self.conv1(x)
-        x1 = x.max(dim=-1, keepdim=False)[0]
+        bs = x.size(0)
+        npoint = x.size(2)
 
-        x = get_graph_feature(x1, k=self.k)
+        # (bs, 9, npoint) -> (bs, 9*2, npoint, k)
+        print("1 ", x.shape)
+        x = get_graph_feature(x, k=self.k)
+        print("2 ", x.shape)
+        # (bs, 9*2, npoint, k) -> (bs, 64, npoint, k)
+        x = self.conv1(x)
+        print("3 ", x.shape)
+        # (bs, 64, npoint, k) -> (bs, 64, npoint, k)
         x = self.conv2(x)
+        # (bs, 64, npoint, k) -> (bs, 64, npoint)
+        x1 = x.max(dim=-1, keepdim=False)[0]
+        # (bs, 64, npoint) -> (bs, 64*2, npoint, k)
+        x = get_graph_feature(x1, k=self.k)
+        # (bs, 64*2, npoint, k) -> (bs, 64, npoint, k)
+        x = self.conv3(x)
+        # (bs, 64, npoint, k) -> (bs, 64, npoint, k)
+        x = self.conv4(x)
+        # (bs, 64, npoint, k) -> (bs, 64, npoint)
         x2 = x.max(dim=-1, keepdim=False)[0]
 
+        # (bs, 64, npoint) -> (bs, 64*2, npoint, k)
         x = get_graph_feature(x2, k=self.k)
-        x = self.conv3(x)
+        # (bs, 64*2, npoint, k) -> (bs, 64, npoint, k)
+        x = self.conv5(x)
+        # (bs, 64, npoint, k) -> (bs, 64, npoint)
         x3 = x.max(dim=-1, keepdim=False)[0]
 
-        x = get_graph_feature(x3, k=self.k)
-        x = self.conv4(x)
-        x4 = x.max(dim=-1, keepdim=False)[0]
+        x = torch.cat((x1, x2, x3), dim=1)      # (bs, 64*3, npoint)
 
-        x = torch.cat((x1, x2, x3, x4), dim=1)
+        # (bs, 64*3, npoint) -> (bs, emb_dims, npoint)
+        x = self.conv6(x)
+        # (bs, emb_dims, npoint) -> (bs, emb_dims, 1)
+        x = x.max(dim=-1, keepdim=True)[0]
 
-        x = self.conv5(x)
-        x1 = F.adaptive_max_pool1d(x, 1).view(batch_size, -1)
-        x2 = F.adaptive_avg_pool1d(x, 1).view(batch_size, -1)
-        x = torch.cat((x1, x2), 1)
+        x = x.repeat(1, 1, npoint)          # (bs, 1024, npoint)
+        x = torch.cat((x, x1, x2, x3), dim=1)   # (bs, 1024+64*3, npoint)
 
-        x = F.leaky_relu(self.bn6(self.linear1(x)), negative_slope=0.2)
+        # (bs, 1024+64*3, npoint) -> (bs, 512, npoint)
+        x = self.conv7(x)
+        # (bs, 512, npoint) -> (bs, 256, npoint)
+        x = self.conv8(x)
         x = self.dp1(x)
-        x = F.leaky_relu(self.bn7(self.linear2(x)), negative_slope=0.2)
-        x = self.dp2(x)
-        x = self.linear3(x)
+        # (bs, 256, npoint) -> (bs, 13, npoint)
+        x = self.conv9(x)
+        # (bs, 13, npoint) -> (bs, npoint, 13)
+        x = x.transpose(2, 1).contiguous()
+        
+
         return x
