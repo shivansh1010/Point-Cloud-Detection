@@ -16,13 +16,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from data import ModelNet40
+from data import ModelNet40,Toronto3D
 from model import PointNet, DGCNN
 import numpy as np
 from torch.utils.data import DataLoader
 from util import cal_loss, IOStream
 import sklearn.metrics as metrics
-
+import torch
 
 def _init_():
     if not os.path.exists('checkpoints'):
@@ -37,9 +37,9 @@ def _init_():
     os.system('cp data.py checkpoints' + '/' + args.exp_name + '/' + 'data.py.backup')
 
 def train(args, io):
-    train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=8,
+    train_loader = DataLoader(Toronto3D(partition='train', num_points=args.num_points), num_workers=8,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
-    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
+    test_loader = DataLoader(Toronto3D(partition='test', num_points=args.num_points), num_workers=8,
                              batch_size=args.test_batch_size, shuffle=True, drop_last=False)
 
     device = torch.device("cuda" if args.cuda else "cpu")
@@ -84,6 +84,9 @@ def train(args, io):
             batch_size = data.size()[0]
             opt.zero_grad()
             logits = model(data)
+            logits=logits.view(-1,9)
+            #logits = torch.argmax(logits,axis=2,keepdims=False)
+            
             loss = criterion(logits, label)
             loss.backward()
             opt.step()
@@ -136,13 +139,13 @@ def train(args, io):
 
 
 def test(args, io):
-    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points),
+    test_loader = DataLoader(Toronto3D(partition='test', num_points=args.num_points),
                              batch_size=args.test_batch_size, shuffle=True, drop_last=False)
 
     device = torch.device("cuda" if args.cuda else "cpu")
 
     #Try to load models
-    model = DGCNN(args).to(device)
+    model = DGCNN(args, 9).to(device)
     
     state_dict = torch.load(args.model_path)
     from collections import OrderedDict
