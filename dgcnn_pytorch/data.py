@@ -14,6 +14,7 @@ import glob
 import h5py
 import numpy as np
 from torch.utils.data import Dataset
+from plyfile import PlyData
 
 
 def download():
@@ -78,17 +79,13 @@ class ModelNet40(Dataset):
     def __len__(self):
         return self.data.shape[0]
 
-def read_ply(
-        partition='train'):
-    #---read the ply file--------
+def read_ply(filename,
+        partition='train'):    #---read the ply file--------
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_DIR = os.path.join(BASE_DIR, 'data')
 
-    if(partition == 'train'):
-        file_path = os.path.join(DATA_DIR, 'LO01.py')
-    else:
-        file_path = os.path.join(DATA_DIR, 'LO02.py')
-    print(file_path)
+    file_path = os.path.join(DATA_DIR, filename)
+    
     plydata = PlyData.read(file_path)
     xyz = np.stack([plydata['vertex'][n] for n in['x', 'y', 'z']], axis=1).astype('float32')
     UTM_OFFSET = [627285, 4841948, 0]
@@ -96,7 +93,7 @@ def read_ply(
 
     try:
         rgb = np.stack([plydata['vertex'][n]
-                for n in ['red', 'green', 'blue']]
+                for n in ['red', 'green', 'blue']]axis
                 , axis=1).astype('float32')
     except ValueError:
         rgb = np.stack([plydata['vertex'][n]
@@ -114,26 +111,41 @@ def read_ply(
         except ValueError:
              print("No labels ")
 
-    data = np.hstack(xyz, rgb)
-
+    #data = np.hstack(xyz, rgb)
+    data=xyz
     return data, labels
-
 class Toronto3D(Dataset):
     def __init__(self, num_points, partition='train'):
-        self.data, self.label = read_ply(partition)
-        self.num_points = len(self.data)
+        all_data=[] 
+        all_label=[]
+        if(partition=="test"):
+            data, label = read_ply("L002.ply",partition)
+            all_data.append(data)
+            all_label.append(label)
+        else:
+            for item in ["L004.ply"]:
+                data,label=read_ply(item,partition)
+                all_data.append(data)
+                all_label.append(label)
+        self.data=np.concatenate(all_data,axis=0)
+        self.label=np.concatenate(all_label,axis=0)
+        self.num_points = num_points #len(self.data)
         self.partition = partition
 
     def __getitem__(self, item):
-        pointcloud = self.data[item][:self.num_points]
-        label = self.label[item]
+        print("item is",item)
+        pointcloud = self.data[:self.num_points]
+        #print("point cloud shape",pointcloud.shape)
+        label = self.label[:self.num_points]
         if self.partition == 'train':
             pointcloud = translate_pointcloud(pointcloud)
             np.random.shuffle(pointcloud)
         return pointcloud, label
 
     def __len__(self):
+        print("length is",self.data.shape[0])
         return self.data.shape[0]
+
 
 if __name__ == '__main__':
     #train = ModelNet40(1024)
@@ -142,5 +154,5 @@ if __name__ == '__main__':
     test = Toronto3D(1024, 'test')
 
     for data, label in train:
-        print(data.shape)
-        print(label.shape)
+        print("data is",data.shape)
+        print("label is",label.shape)
