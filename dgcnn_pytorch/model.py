@@ -98,6 +98,7 @@ class PointNet(nn.Module):
         print("input 19 output shape = ", x.shape)
         x = self.linear2(x)
         print("input 10 output shape = ", x.shape)
+        x = x.transpose(2, 1).contiguous()
         return x
 
 
