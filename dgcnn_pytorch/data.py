@@ -93,7 +93,7 @@ def read_ply(filename,
 
     try:
         rgb = np.stack([plydata['vertex'][n]
-                for n in ['red', 'green', 'blue']]axis
+                for n in ['red', 'green', 'blue']]
                 , axis=1).astype('float32')
     except ValueError:
         rgb = np.stack([plydata['vertex'][n]
@@ -119,11 +119,11 @@ class Toronto3D(Dataset):
         all_data=[] 
         all_label=[]
         if(partition=="test"):
-            data, label = read_ply("L002.ply",partition)
+            data, label = read_ply("LO02.ply",partition)
             all_data.append(data)
             all_label.append(label)
         else:
-            for item in ["L004.ply"]:
+            for item in ["LO04.ply"]:
                 data,label=read_ply(item,partition)
                 all_data.append(data)
                 all_label.append(label)

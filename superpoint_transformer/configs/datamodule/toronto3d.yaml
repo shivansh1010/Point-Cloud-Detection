@@ -24,6 +24,9 @@ partition_hf:
   - 'planarity'
   - 'scattering'
   - 'verticality'
+    #- 'curvature'
+    #- 'surface'
+    #- 'intensity'
     #- 'elevation'
 
 # point features used for training
@@ -32,6 +35,9 @@ point_hf:
   - 'planarity'
   - 'scattering'
   - 'verticality'
+    #- 'curvature'
+    #- 'surface'
+    #- 'intensity'
     #- 'elevation'
   - 'rgb'
 

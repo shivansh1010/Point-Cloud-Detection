@@ -25,8 +25,15 @@ __all__ = ['TORONTO3D', 'MiniTORONTO3D']
 #                                 Utils                                #
 ########################################################################
 
+def to_float_intensity(intensity):
+    intensity = intensity.float()
+    if intensity.max() > 1:
+        intensity = intensity / 255
+    intensity = intensity.clamp(min=0, max=1)
+    return intensity
+
 def read_ply(
-    file_path, xyz=True, rgb=True, semantic=True, instance=False,
+    file_path, xyz=True, rgb=True, semantic=True, intensity=True, instance=False,
     verbose=True):
     """convert from a ply file. include the label and the object number"""
     """Read all Toronto3D object-wise annotations in a given directory.
@@ -54,6 +61,7 @@ def read_ply(
     # label
     xyz_list = [] if xyz else None
     rgb_list = [] if rgb else None
+    intensity_list = [] if intensity else None
     y_list = [] if semantic else None
     o_list = [] if instance else None
 
@@ -88,6 +96,19 @@ def read_ply(
             except ValueError:
                 log.warning("No labels ")
 
+    if intensity:
+        try:
+            tmp_data = plydata['vertex']['intensity']
+            # convert labels into float values
+            tmp_data = np.array(tmp_data).astype(np.float32)
+            intensity_list.append(tmp_data)
+        except ValueError:
+            try:
+                tmp_data = np.array(plydata['vertex']['scalar_Intensity']).astype(np.float32)
+                intensity_list.append(tmp_data)
+            except ValueError:
+                log.warning("No intensity ")
+
     if instance:
         try:
             object_indices = plydata['vertex']['object_index']
@@ -99,12 +120,13 @@ def read_ply(
     xyz_data = torch.from_numpy(np.concatenate(xyz_list, 0)) if xyz else None
     rgb_data = to_float_rgb(torch.from_numpy(np.concatenate(rgb_list, 0))) \
         if rgb else None
+    intensity_data = to_float_intensity(torch.from_numpy(np.concatenate(intensity_list, 0))) if intensity else None
     y_data = torch.from_numpy(np.concatenate(y_list, 0)) if semantic else None
     o_data = torch.from_numpy(np.concatenate(o_list, 0)) if instance else None
 
     print(xyz_data.shape, rgb_data.shape, y_data.shape)
     # Store into a Data object
-    data = Data(pos=xyz_data, rgb=rgb_data, y=y_data, o=o_data)
+    data = Data(pos=xyz_data, rgb=rgb_data, intensity=intensity_data, y=y_data, o=o_data)
     print(data.size())
 
     return data
@@ -190,7 +212,7 @@ class TORONTO3D(BaseDataset):
         be passed to `self.pre_transform`.
         """
         return read_ply(
-            raw_cloud_path, xyz=True, rgb=True, semantic=True, instance=False,
+            raw_cloud_path, xyz=True, rgb=True, semantic=True, intensity=True, instance=False,
             verbose=False)
 
     @property

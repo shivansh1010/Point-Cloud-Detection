@@ -58,11 +58,21 @@ class MultiLoss(nn.Module):
             *args, destination=destination, prefix=prefix, keep_vars=keep_vars)
 
         # Remove the 'weight' from the criteria
-        for i in range(len(self)):
-            destination.pop(f"{prefix}criteria.{i}.weight")
+        print("Length = ", len(self))
+        print("Prefix = ", prefix)
+        print("Criteria = ", self.criteria)
+        old_format = destination.get('criteria.0.weight')
+        new_format = destination.get('weight')
+        weight = new_format if new_format is not None else old_format
+        for k in [f"criteria.{i}.weight" for i in range(len(self))]:
+            if k in destination.keys():
+                destination.pop(k)
+        #for i in range(len(self)):
+        #    destination.pop(f"{prefix}criteria.weight")
 
         # Only save the global shared weight
         destination[f"{prefix}weight"] = self.weight
+        #destination['weight'] = self.weight
 
         return destination
 
