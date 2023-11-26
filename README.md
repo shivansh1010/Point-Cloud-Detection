@@ -39,17 +39,41 @@ Pending Activities
 
    
 ### Datasets
-
+A Point in space is generally characterized by three parameters, the X, Y, and Z coordinates. A large collection of these points is termed Point Cloud. These are particularly useful for object classification and detection in 3D, which is then utilized for autonomous driving systems. This data is usually captured using 3D scanners or LiDAR technology (Light Detection And Ranging). In practice, each data point consists of various parameters as well apart from coordinates.
+XYZ Coordinates
+RGB color values
+Intensity
+GPS time
+Scan angle details
+There are multiple widely-used point cloud datasets available. Some are them are:
+- Semantic KITTI - http://www.semantic-kitti.org/dataset.html
+- Paris-Lille-3D - https://npm3d.fr/paris-lille-3d 
+- Toronto-3D - https://github.com/WeikaiTan/Toronto-3D 
 
 ### Implementation Details
-(Santhosh)
+#### 5.1 Activities completed till date
+1. Setup of PointNet algorithm and execution on standard (Kitti) dataset.
+2. Setup of DGCN (Dynamic Graph Convolution Network) algorithm and execution on standard (Kitti) dataset.
+3. Setup of SuperPoint Transformer model.
+4. Toronto 3D dataset preprocessing and transformation to use with the SuperPoint Transformer model.
+5. Completed preprocessing of Toronto 3D LO04.ply file. Waiting for the other three file transformation to complete before fine tuning the parameters.
+6. Completed the modification to include Triplet loss instead of regular cross-entropy loss in the algorithm.
 
-### Preliminary results
-(Santhosh)
+The detailed implementation changes can be found at 
+https://github.com/shivansh1010/FML-project/tree/main
+
+#### 5.2 Activities post Midterm report are
+1. Integrate Toronto-3D dataset with DGCNN
+2. Integrate Toronto-3D dataset with PointNet
+3. Fine tune model parameters to improve accuracies.
+4. Present the results
+
+#### 5.3 Challenges Faced
+Three of the four files in Toronto-3D files are greater than 1GB. Hence gives CUDA out-of-memory error (on a 16GB GPU machine). We have disabled use of GPU and running on CPU mode.
+SuperPoint Transformers uses FRNN module which uses a very old version of CUDA library. Downgrading the CUDA library is a challenge as the server is a shared server. We are looking at CPU only FRNN library
+Faced a lot of issues in early days related to library version mismatch. We explored various versions and now have finalized on a “conda” environment that is working.
 
 ### References
-
-### Links
 - Project Report: https://docs.google.com/document/d/17OKdrrWXopel2GoBX1O-22-uBhzP_fFB9dWt9vmu528/edit
 - Discussion Sheet: https://docs.google.com/spreadsheets/d/1oOCtOhW92rF0gF32LmwjMK1lHeleryVZe_BT46rSyU4/edit#gid=0
 - Pointnet Slides - PointNet (stanford.edu)
