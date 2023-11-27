@@ -15,18 +15,27 @@ import torch.nn.functional as F
 
 def cal_loss(pred, gold, smoothing=True):
     ''' Calculate cross entropy loss, apply label smoothing if needed. '''
+    #print("sizes are",gold.shape,pred.shape)
 
-    gold = gold.contiguous().view(-1)
 
+    #gold=gold.contiguous().view(-1)
+
+    #print(gold.view(-1,1).shape,gold.shape,pred.shape)
+    #print(gold.unsqueeze(1).shape)
     if smoothing:
         eps = 0.2
-        n_class = pred.size(1)
+        n_class =9 # pred.size(1)
+        #gold=gold.view(-1,1).long()
+        #print(gold.shape,pred.shape)
+        #gold=gold.expand(-1,pred.size(1))
+        #print(gold.shape,pred.shape)
+        gold=gold.unsqueeze(2)
 
-        one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
+        one_hot = torch.zeros_like(pred).scatter(2, gold, 1)
         one_hot = one_hot * (1 - eps) + (1 - one_hot) * eps / (n_class - 1)
-        log_prb = F.log_softmax(pred, dim=1)
+        log_prb = F.log_softmax(pred, dim=2)
 
-        loss = -(one_hot * log_prb).sum(dim=1).mean()
+        loss = -(one_hot * log_prb).sum(dim=2).mean()
     else:
         loss = F.cross_entropy(pred, gold, reduction='mean')
 
