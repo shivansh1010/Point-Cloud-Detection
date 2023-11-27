@@ -112,6 +112,7 @@ def read_ply(filename,
              print("No labels ")
 
     #data = np.hstack(xyz, rgb)
+    #data=np.array_split(xyz, 1000)[0]
     data=xyz
     return data, labels
 class Toronto3D(Dataset):
@@ -123,17 +124,18 @@ class Toronto3D(Dataset):
             all_data.append(data)
             all_label.append(label)
         else:
-            for item in ["LO04.ply"]:
+            for item in ["LO01.ply"]:
                 data,label=read_ply(item,partition)
                 all_data.append(data)
                 all_label.append(label)
+        # import pdb; pdb.set_trace()
         self.data=np.concatenate(all_data,axis=0)
         self.label=np.concatenate(all_label,axis=0)
         self.num_points = num_points #len(self.data)
         self.partition = partition
 
     def __getitem__(self, item):
-        print("item is",item)
+        #print("item is",item)
         pointcloud = self.data[:self.num_points]
         #print("point cloud shape",pointcloud.shape)
         label = self.label[:self.num_points]
