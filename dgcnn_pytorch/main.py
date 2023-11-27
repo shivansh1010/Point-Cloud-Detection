@@ -12,6 +12,7 @@ from __future__ import print_function
 import os
 import argparse
 import torch
+import io
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -23,6 +24,8 @@ from torch.utils.data import DataLoader
 from util import cal_loss, IOStream
 import sklearn.metrics as metrics
 import torch
+import pickle
+import collections
 
 def _init_():
     if not os.path.exists('checkpoints'):
@@ -40,7 +43,7 @@ def train(args, io):
     train_loader = DataLoader(Toronto3D(partition='train', num_points=args.num_points), num_workers=8,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(Toronto3D(partition='test', num_points=args.num_points), num_workers=8,
-                             batch_size=args.test_batch_size, shuffle=True, drop_last=False)
+                             batch_size=args.test_batch_size, shuffle=True, drop_last=True)
 
     device = torch.device("cuda" if args.cuda else "cpu")
 
@@ -75,28 +78,38 @@ def train(args, io):
         ####################
         train_loss = 0.0
         count = 0.0
-        model.train()
+        model.train() # doesnt actually train the model, just telling the model that we're training
         train_pred = []
         train_true = []
+        # import pdb; pdb.set_trace()
         for data, label in train_loader:
             data, label = data.to(device), label.to(device).squeeze()
             data = data.permute(0, 2, 1)
             batch_size = data.size()[0]
             opt.zero_grad()
+            #print("train head", data)
             logits = model(data)
-            logits=logits.view(-1,9)
+            #logits1=logits.view(-1,9)
             #logits = torch.argmax(logits,axis=2,keepdims=False)
             
             loss = criterion(logits, label)
             loss.backward()
             opt.step()
-            preds = logits.max(dim=1)[1]
+            preds = logits.max(dim=2)[1]
             count += batch_size
             train_loss += loss.item() * batch_size
             train_true.append(label.cpu().numpy())
             train_pred.append(preds.detach().cpu().numpy())
         train_true = np.concatenate(train_true)
         train_pred = np.concatenate(train_pred)
+        #import pdb; pdb.set_trace()
+        print("number of samples in train_true",len(train_true))
+        print("number of samples in train_pred",len(train_pred))
+        train_true = train_true.flatten()
+        train_pred = train_pred.flatten()
+        print(train_true.shape, train_pred.shape)
+        print(train_true)
+        print(train_pred)
         outstr = 'Train %d, loss: %.6f, train acc: %.6f, train avg acc: %.6f' % (epoch,
                                                                                  train_loss*1.0/count,
                                                                                  metrics.accuracy_score(
@@ -104,10 +117,12 @@ def train(args, io):
                                                                                  metrics.balanced_accuracy_score(
                                                                                      train_true, train_pred))
         io.cprint(outstr)
+        #import pdb; pdb.set_trace()
 
         ####################
         # Test
         ####################
+        print("--------------- STARTING TEST ------------------")
         test_loss = 0.0
         count = 0.0
         model.eval()
@@ -117,21 +132,28 @@ def train(args, io):
             data, label = data.to(device), label.to(device).squeeze()
             data = data.permute(0, 2, 1)
             batch_size = data.size()[0]
+            data = data.to(torch.float32)
+            #print("test head1", data)
             logits = model(data)
             loss = criterion(logits, label)
-            preds = logits.max(dim=1)[1]
+            preds = logits.max(dim=2)[1]
             count += batch_size
             test_loss += loss.item() * batch_size
             test_true.append(label.cpu().numpy())
             test_pred.append(preds.detach().cpu().numpy())
         test_true = np.concatenate(test_true)
         test_pred = np.concatenate(test_pred)
+        # import pdb; pdb.set_trace()
+        test_true = test_true.flatten()
+        test_pred = test_pred.flatten()
         test_acc = metrics.accuracy_score(test_true, test_pred)
         avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
                                                                               avg_per_class_acc)
+        #import pdb; pdb.set_trace()
+
         io.cprint(outstr)
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
@@ -145,12 +167,25 @@ def test(args, io):
     device = torch.device("cuda" if args.cuda else "cpu")
 
     #Try to load models
-    model = DGCNN(args, 9).to(device)
-    
-    state_dict = torch.load(args.model_path)
-    from collections import OrderedDict
+    # model = DGCNN(args, 9).to(device)
+    if args.model == 'pointnet':
+        model = PointNet(args).to(device)
+    elif args.model == 'dgcnn':
+        model = DGCNN(args).to(device)
+    else:
+        raise Exception("Not implemented")
+    print(str(model))
 
-    model.load_state_dict(torch.load(args.model_path))
+    state_dict = torch.load(args.model_path)
+
+    remove_prefix = 'module.'
+    state_dict = {k[len(remove_prefix):] if k.startswith(remove_prefix) else k: v for k, v in state_dict.items()}
+
+    #state_dict = {k: v.type(torch.cuda.FloatTensor) for k, v in state_dict.items()}
+    #new_state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
+
+    from collections import OrderedDict
+    model.load_state_dict(state_dict)
     model = nn.DataParallel(model)
     model = model.eval()
     test_acc = 0.0
@@ -161,13 +196,18 @@ def test(args, io):
 
         data, label = data.to(device), label.to(device).squeeze()
         data = data.permute(0, 2, 1)
+        data = data.to(torch.float32)
         batch_size = data.size()[0]
         logits = model(data)
-        preds = logits.max(dim=1)[1]
+        preds = logits.max(dim=2)[1]
         test_true.append(label.cpu().numpy())
         test_pred.append(preds.detach().cpu().numpy())
+    #import pdb; pdb.set_trace()
     test_true = np.concatenate(test_true)
     test_pred = np.concatenate(test_pred)
+    test_true = test_true.flatten()
+    test_pred = test_pred.flatten()
+    # import pdb; pdb.set_trace()
     test_acc = metrics.accuracy_score(test_true, test_pred)
     avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
     outstr = 'Test :: test acc: %.6f, test avg acc: %.6f'%(test_acc, avg_per_class_acc)
@@ -182,13 +222,13 @@ if __name__ == "__main__":
     parser.add_argument('--model', type=str, default='dgcnn', metavar='N',
                         choices=['pointnet', 'dgcnn'],
                         help='Model to use, [pointnet, dgcnn]')
-    parser.add_argument('--dataset', type=str, default='modelnet40', metavar='N',
-                        choices=['modelnet40'])
+    parser.add_argument('--dataset', type=str, default='toronto3d', metavar='N',
+                        choices=['toronto3d'])
     parser.add_argument('--batch_size', type=int, default=32, metavar='batch_size',
                         help='Size of batch)')
     parser.add_argument('--test_batch_size', type=int, default=16, metavar='batch_size',
                         help='Size of batch)')
-    parser.add_argument('--epochs', type=int, default=250, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of episode to train ')
     parser.add_argument('--use_sgd', type=bool, default=True,
                         help='Use SGD')
@@ -210,7 +250,7 @@ if __name__ == "__main__":
                         help='Dimension of embeddings')
     parser.add_argument('--k', type=int, default=20, metavar='N',
                         help='Num of nearest neighbors to use')
-    parser.add_argument('--model_path', type=str, default='', metavar='N',
+    parser.add_argument('--model_path', type=str, default='checkpoints/pointnet_1024/models/model.t7', metavar='N',
                         help='Pretrained model path')
     args = parser.parse_args()
 
