@@ -60,7 +60,7 @@ There are multiple widely-used point cloud datasets available. Some are them are
 6. Completed the modification to include Triplet loss instead of regular cross-entropy loss in the algorithm.
 
 The detailed implementation changes can be found at 
-https://github.com/shivansh1010/FML-project/tree/main
+https://github.com/shivansh1010/Point-Cloud-Detection/tree/main
 
 #### 5.2 Activities post Midterm report are
 1. Integrate Toronto-3D dataset with DGCNN
