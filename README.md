@@ -64,6 +64,7 @@ SuperPoint Transformers uses FRNN module which uses a very old version of CUDA l
 Faced a lot of issues in early days related to library version mismatch. We explored various versions and now have finalized on a “conda” environment that is working.
 
 ### References
+- Project Report: [here](https://docs.google.com/document/d/17OKdrrWXopel2GoBX1O-22-uBhzP_fFB9dWt9vmu528/edit)
 - Pointnet Slides - PointNet (stanford.edu)
 - Pointnet Paper - arxiv.org/pdf/1612.00593.pdf
 - Pointnet Github Code - https://github.com/charlesq34/pointnet
