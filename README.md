@@ -1,18 +1,8 @@
-Midterm report
-
-    An enhanced and well-defined problem statement, taking into account the received feedback.
-    Description of the proposed solution approach.
-    A code survey where you include links to the relevant codebases that you refer to while implementing the solution
-    Datasets
-    Implementation details.
-    Preliminary results (if any).
-    A roadmap for the remainder of the semester
-
 # FML-project
 
 This repository belongs to the project of CS725-2023, Foundations of Machine Learning course. 
 
-### Topic: Point Cloud Object Detection
+## Topic: Point Cloud Object Detection
 
 World health organization has estimated an average of 1.3 million road deaths every year. Road marking extraction is emerging as an important remote sensing application to meet United Nations goal to reduce road injuries by half by 2030. One of the ways to reduce Highway injuries is to ensure Road marking, Lighting Poles and Guard Rails are in place and in proper condition. The process of analysis of these highway objects is a manual, tedious and time-consuming process. With advancements in data capture technologies, cost of 3D point cloud data capture have drastically reduced over the last decade. Today point cloud and photogrammetry data capture methods are widely used and process to identify road assets and its conditions to monitor and maintain road safety. 
 
@@ -74,8 +64,6 @@ SuperPoint Transformers uses FRNN module which uses a very old version of CUDA l
 Faced a lot of issues in early days related to library version mismatch. We explored various versions and now have finalized on a “conda” environment that is working.
 
 ### References
-- Project Report: https://docs.google.com/document/d/17OKdrrWXopel2GoBX1O-22-uBhzP_fFB9dWt9vmu528/edit
-- Discussion Sheet: https://docs.google.com/spreadsheets/d/1oOCtOhW92rF0gF32LmwjMK1lHeleryVZe_BT46rSyU4/edit#gid=0
 - Pointnet Slides - PointNet (stanford.edu)
 - Pointnet Paper - arxiv.org/pdf/1612.00593.pdf
 - Pointnet Github Code - https://github.com/charlesq34/pointnet
